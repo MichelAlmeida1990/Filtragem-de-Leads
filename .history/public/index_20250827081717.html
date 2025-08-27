@@ -6,91 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DataHub - Plataforma de Análise de Dados</title>
     <style>
-        /* CSS Crítico - Versão Completa */
+        /* CSS Crítico - Fallback */
         :root {
             --primary-dark: #0f172a;
             --primary-blue: #1e40af;
             --primary-light: #3b82f6;
-            --accent-purple: #8b5cf6;
-            --accent-cyan: #06b6d4;
-            --accent-emerald: #10b981;
             --text-white: #ffffff;
-            --text-gray: #e2e8f0;
         }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-light) 50%, var(--primary-dark) 100%);
             color: var(--text-white);
-            line-height: 1.6;
             min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
         }
-        
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 30px;
             background: rgba(59, 130, 246, 0.1);
             backdrop-filter: blur(30px);
-            border: 2px solid rgba(255, 255, 255, 0.15);
             border-radius: 30px;
-            box-shadow: 
-                20px 20px 40px rgba(30, 64, 175, 0.4),
-                -20px -20px 40px rgba(96, 165, 250, 0.4),
-                inset 2px 2px 4px rgba(255, 255, 255, 0.1);
-            position: relative;
-            z-index: 1;
         }
-        
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 40px 0;
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
-            border-radius: 25px;
-            box-shadow: 0 20px 40px rgba(30, 58, 138, 0.4);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        h1, h2, h3 { color: var(--text-white); }
-        
-        .input-section, .filters-section, .output-section {
-            background: rgba(59, 130, 246, 0.15);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 25px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 
-                12px 12px 24px rgba(30, 64, 175, 0.3),
-                -12px -12px 24px rgba(96, 165, 250, 0.3),
-                inset 1px 1px 2px rgba(255, 255, 255, 0.1);
-        }
-        
-        .btn-primary, .btn-secondary {
-            padding: 16px 32px;
-            border: none;
-            border-radius: 20px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: var(--primary-blue);
-            color: var(--text-white);
-        }
-        
-        .btn-secondary {
-            background: #6b7280;
-        }
-        
-        .page-section { display: none; }
-        .page-section.active { display: block; }
     </style>
     <link rel="stylesheet" href="styles.css?v=13" type="text/css">
     <link rel="stylesheet" href="/styles.css?v=13" type="text/css">
@@ -641,46 +578,26 @@
     </div>
 
     <script>
-        // Debug CSS Loading
-        console.log('=== CSS DEBUG ===');
-        console.log('Location:', window.location.href);
-        console.log('Base URL:', document.baseURI);
-        
-        // Verificar se CSS foi carregado
-        function checkCSSLoaded() {
-            var testElement = document.createElement('div');
-            testElement.className = 'container';
-            document.body.appendChild(testElement);
-            var computedStyle = window.getComputedStyle(testElement);
-            var hasBackground = computedStyle.background && computedStyle.background !== 'rgba(0, 0, 0, 0)' && computedStyle.background !== 'transparent';
-            document.body.removeChild(testElement);
+        // Garantir carregamento do CSS
+        (function() {
+            var cssLoaded = false;
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = './styles.css?v=12';
+            link.onload = function() { cssLoaded = true; };
+            link.onerror = function() {
+                console.warn('Erro ao carregar CSS externo, usando fallback');
+            };
+            document.head.appendChild(link);
             
-            console.log('CSS carregado:', hasBackground);
-            console.log('Background detectado:', computedStyle.background);
-            
-            if (!hasBackground) {
-                console.error('❌ CSS NÃO CARREGADO! Verificar Network tab.');
-                // Tentar URLs alternativas
-                ['styles.css', '/styles.css', './styles.css'].forEach(function(url) {
-                    fetch(url + '?v=13').then(function(response) {
-                        console.log('CSS test:', url, response.status, response.headers.get('content-type'));
-                    }).catch(function(err) {
-                        console.log('CSS test failed:', url, err.message);
-                    });
-                });
-            } else {
-                console.log('✅ CSS CARREGADO COM SUCESSO!');
-            }
-        }
-        
-        // Verificar após carregamento
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(checkCSSLoaded, 1000);
-            });
-        } else {
-            setTimeout(checkCSSLoaded, 1000);
-        }
+            // Fallback para verificar se o CSS foi carregado
+            setTimeout(function() {
+                if (!cssLoaded) {
+                    console.warn('CSS não carregado após timeout, aplicando estilos inline');
+                }
+            }, 3000);
+        })();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
