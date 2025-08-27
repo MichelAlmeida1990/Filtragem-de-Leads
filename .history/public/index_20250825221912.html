@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cielo - Filtrador de Dados Excel</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="logo">🌐</div>
+                <div class="logo-text">CIELO</div>
+            </div>
+            <h1>Filtrador de Dados Excel</h1>
+            <p>Ferramenta profissional para filtrar e exportar dados do Excel por cidade e área</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <h2>📋 Dados do Excel</h2>
+                
+                <!-- Opções de entrada -->
+                <div class="input-options">
+                    <div class="option-tabs">
+                        <button class="option-tab active" data-option="paste">
+                            📋 Colar Dados
+                        </button>
+                        <button class="option-tab" data-option="upload">
+                            📁 Importar Arquivo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Área de colar dados -->
+                <div class="input-area" id="pasteArea">
+                    <textarea 
+                        id="excelData" 
+                        placeholder="Cole aqui os dados do seu Excel...&#10;&#10;Exemplo:&#10;Nome, Cidade, Área, Telefone&#10;João, São Paulo, Centro, (11) 9999-9999&#10;Maria, Rio de Janeiro, Copacabana, (21) 8888-8888"
+                        rows="15"
+                    ></textarea>
+                </div>
+
+                <!-- Área de upload de arquivo -->
+                <div class="input-area" id="uploadArea" style="display: none;">
+                    <div class="file-upload-container">
+                        <div class="file-upload-area" id="fileUploadArea">
+                            <div class="upload-icon">📁</div>
+                            <h3>Arraste seu arquivo Excel aqui</h3>
+                            <p>ou clique para selecionar</p>
+                            <p class="file-types">Formatos aceitos: .xlsx, .xls (máx. 10MB)</p>
+                            <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+                        </div>
+                        <div class="file-info" id="fileInfo" style="display: none;">
+                            <div class="file-details">
+                                <span class="file-name" id="fileName"></span>
+                                <span class="file-size" id="fileSize"></span>
+                            </div>
+                            <button class="btn-remove" id="removeFile">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="processBtn" class="btn-primary">
+                        🔄 Processar Dados
+                    </button>
+                    <button id="clearBtn" class="btn-secondary">
+                        🗑️ Limpar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Seção de Filtros -->
+            <div class="filters-section" id="filtersSection" style="display: none;">
+                <h2>🎯 Filtros</h2>
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label for="cityFilter">🏙️ Cidade:</label>
+                        <select id="cityFilter" class="filter-select">
+                            <option value="">Todas as cidades</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="areaFilter">📍 Área:</label>
+                        <select id="areaFilter" class="filter-select">
+                            <option value="">Todas as áreas</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="searchFilter">🔍 Buscar:</label>
+                        <input type="text" id="searchFilter" class="filter-input" placeholder="Digite para buscar...">
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button id="applyFiltersBtn" class="btn-primary">
+                        ✅ Aplicar Filtros
+                    </button>
+                    <button id="clearFiltersBtn" class="btn-secondary">
+                        🔄 Limpar Filtros
+                    </button>
+                </div>
+            </div>
+
+            <div class="output-section" id="outputSection" style="display: none;">
+                <h2>✅ Dados Filtrados</h2>
+                <div class="file-info-display" id="fileInfoDisplay" style="display: none;">
+                    <div class="info-item">
+                        <span class="info-label">📄 Arquivo:</span>
+                        <span class="info-value" id="displayFileName"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📊 Planilha:</span>
+                        <span class="info-value" id="displaySheetName"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📈 Total de Linhas:</span>
+                        <span class="info-value" id="displayTotalRows"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🎯 Resultados:</span>
+                        <span class="info-value" id="displayFilteredRows"></span>
+                    </div>
+                </div>
+                <div class="output-container">
+                    <div class="output-tabs">
+                        <button class="tab-btn active" data-tab="filtered">Filtrado</button>
+                        <button class="tab-btn" data-tab="original">Original</button>
+                    </div>
+                    <div class="tab-content">
+                        <div id="filteredContent" class="tab-pane active"></div>
+                        <div id="originalContent" class="tab-pane"></div>
+                    </div>
+                </div>
+                <div class="export-actions">
+                    <button id="exportCsvBtn" class="btn-success">
+                        📊 Exportar CSV
+                    </button>
+                    <button id="exportExcelBtn" class="btn-success">
+                        📈 Exportar Excel
+                    </button>
+                    <button id="copyToClipboardBtn" class="btn-secondary">
+                        📋 Copiar para Área de Transferência
+                    </button>
+                </div>
+            </div>
+
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Processando seus dados...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>✨ Cielo - Soluções em Tecnologia e Pagamentos</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

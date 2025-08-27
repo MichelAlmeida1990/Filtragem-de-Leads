@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formatador de Dados Excel</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Formatador de Dados Excel</h1>
+            <p>Cole seus dados do Excel aqui e eu formatarei para você</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <h2>📋 Dados do Excel</h2>
+                <textarea 
+                    id="excelData" 
+                    placeholder="Cole aqui os dados do seu Excel...&#10;&#10;Exemplo:&#10;Nome, Idade, Cidade&#10;João, 25, São Paulo&#10;Maria, 30, Rio de Janeiro"
+                    rows="15"
+                ></textarea>
+                
+                <div class="button-group">
+                    <button id="formatBtn" class="btn-primary">
+                        🔄 Formatar Dados
+                    </button>
+                    <button id="clearBtn" class="btn-secondary">
+                        🗑️ Limpar
+                    </button>
+                </div>
+            </div>
+
+            <div class="output-section" id="outputSection" style="display: none;">
+                <h2>✅ Dados Formatados</h2>
+                <div class="output-container">
+                    <div class="output-tabs">
+                        <button class="tab-btn active" data-tab="formatted">Formatado</button>
+                        <button class="tab-btn" data-tab="original">Original</button>
+                    </div>
+                    <div class="tab-content">
+                        <div id="formattedContent" class="tab-pane active"></div>
+                        <div id="originalContent" class="tab-pane"></div>
+                    </div>
+                </div>
+                <button id="downloadBtn" class="btn-success">
+                    💾 Baixar Dados Formatados
+                </button>
+            </div>
+
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Formatando seus dados...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>✨ Pronto para processar seus dados do Excel!</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

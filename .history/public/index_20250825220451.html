@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formatador de Dados Excel</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Formatador de Dados Excel</h1>
+            <p>Cole seus dados do Excel ou importe um arquivo para formatar</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <h2>📋 Dados do Excel</h2>
+                
+                <!-- Opções de entrada -->
+                <div class="input-options">
+                    <div class="option-tabs">
+                        <button class="option-tab active" data-option="paste">
+                            📋 Colar Dados
+                        </button>
+                        <button class="option-tab" data-option="upload">
+                            📁 Importar Arquivo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Área de colar dados -->
+                <div class="input-area" id="pasteArea">
+                    <textarea 
+                        id="excelData" 
+                        placeholder="Cole aqui os dados do seu Excel...&#10;&#10;Exemplo:&#10;Nome, Idade, Cidade&#10;João, 25, São Paulo&#10;Maria, 30, Rio de Janeiro"
+                        rows="15"
+                    ></textarea>
+                </div>
+
+                <!-- Área de upload de arquivo -->
+                <div class="input-area" id="uploadArea" style="display: none;">
+                    <div class="file-upload-container">
+                        <div class="file-upload-area" id="fileUploadArea">
+                            <div class="upload-icon">📁</div>
+                            <h3>Arraste seu arquivo Excel aqui</h3>
+                            <p>ou clique para selecionar</p>
+                            <p class="file-types">Formatos aceitos: .xlsx, .xls (máx. 10MB)</p>
+                            <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+                        </div>
+                        <div class="file-info" id="fileInfo" style="display: none;">
+                            <div class="file-details">
+                                <span class="file-name" id="fileName"></span>
+                                <span class="file-size" id="fileSize"></span>
+                            </div>
+                            <button class="btn-remove" id="removeFile">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="formatBtn" class="btn-primary">
+                        🔄 Formatar Dados
+                    </button>
+                    <button id="clearBtn" class="btn-secondary">
+                        🗑️ Limpar
+                    </button>
+                </div>
+            </div>
+
+            <div class="output-section" id="outputSection" style="display: none;">
+                <h2>✅ Dados Formatados</h2>
+                <div class="file-info-display" id="fileInfoDisplay" style="display: none;">
+                    <div class="info-item">
+                        <span class="info-label">📄 Arquivo:</span>
+                        <span class="info-value" id="displayFileName"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📊 Planilha:</span>
+                        <span class="info-value" id="displaySheetName"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📈 Linhas:</span>
+                        <span class="info-value" id="displayRows"></span>
+                    </div>
+                </div>
+                <div class="output-container">
+                    <div class="output-tabs">
+                        <button class="tab-btn active" data-tab="formatted">Formatado</button>
+                        <button class="tab-btn" data-tab="original">Original</button>
+                    </div>
+                    <div class="tab-content">
+                        <div id="formattedContent" class="tab-pane active"></div>
+                        <div id="originalContent" class="tab-pane"></div>
+                    </div>
+                </div>
+                <button id="downloadBtn" class="btn-success">
+                    💾 Baixar Dados Formatados
+                </button>
+            </div>
+
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Formatando seus dados...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>✨ Pronto para processar seus dados do Excel!</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

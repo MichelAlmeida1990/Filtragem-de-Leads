@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Animações - Cielo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: white;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            color: #333;
+        }
+        
+        button {
+            padding: 15px 30px;
+            margin: 10px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background: #2563eb;
+        }
+        
+        #log {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Teste de Animações Cielo</h1>
+        <p>Use os botões abaixo para testar as animações:</p>
+        
+        <button onclick="iniciarAnimacao()">🚀 Iniciar Animação</button>
+        <button onclick="pararAnimacao()">🛑 Parar Animação</button>
+        <button onclick="testarCanvas()">🧪 Testar Canvas</button>
+        <button onclick="limparLog()">🗑️ Limpar Log</button>
+        
+        <div id="log"></div>
+    </div>
+
+    <script src="tetris.js"></script>
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function iniciarAnimacao() {
+            log('🚀 Iniciando animação...');
+            if (window.startCieloBackground) {
+                window.startCieloBackground();
+                log('✅ Função startCieloBackground chamada');
+            } else {
+                log('❌ Função startCieloBackground não encontrada');
+            }
+        }
+        
+        function pararAnimacao() {
+            log('🛑 Parando animação...');
+            if (window.stopCieloBackground) {
+                window.stopCieloBackground();
+                log('✅ Função stopCieloBackground chamada');
+            } else {
+                log('❌ Função stopCieloBackground não encontrada');
+            }
+        }
+        
+        function testarCanvas() {
+            log('🧪 Testando canvas...');
+            const canvas = document.getElementById('cieloBackground');
+            if (canvas) {
+                log(`✅ Canvas encontrado: ${canvas.width}x${canvas.height}`);
+                log(`📐 Posição: ${canvas.style.position || 'não definida'}`);
+                log(`👁️ Opacidade: ${canvas.style.opacity || 'não definida'}`);
+                log(`🔢 Z-index: ${canvas.style.zIndex || 'não definido'}`);
+            } else {
+                log('❌ Canvas não encontrado');
+            }
+            
+            if (window.diagnosticarAnimacoes) {
+                window.diagnosticarAnimacoes();
+            }
+        }
+        
+        function limparLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        // Log automático quando a página carrega
+        window.addEventListener('load', () => {
+            log('🌐 Página carregada');
+            setTimeout(() => {
+                log('⏰ Verificando animações após 2 segundos...');
+                testarCanvas();
+            }, 2000);
+        });
+        
+        // Interceptar logs do console
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            if (args[0] && args[0].includes && (args[0].includes('🎨') || args[0].includes('✨') || args[0].includes('❌'))) {
+                log(args.join(' '));
+            }
+        };
+    </script>
+</body>
+</html>

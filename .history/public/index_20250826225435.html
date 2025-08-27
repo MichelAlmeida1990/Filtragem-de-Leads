@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataHub - Plataforma de Análise de Dados</title>
+    <link rel="stylesheet" href="styles.css?v=6">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="modern-banner">
+                <div class="banner-background">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" 
+                         alt="Data Analytics Background" 
+                         class="banner-image">
+                    <div class="banner-overlay"></div>
+                </div>
+                
+                <div class="banner-content">
+                    <div class="banner-text">
+                        <h1 class="banner-title">
+                            <span class="title-highlight">DataHub</span>
+                            <span class="title-subtitle">Analytics</span>
+                        </h1>
+                        <p class="banner-description">
+                            Plataforma inteligente para análise, filtragem e visualização de dados empresariais
+                        </p>
+                        <div class="banner-stats">
+                            <div class="stat-item">
+                                <div class="stat-number" id="bannerTotalRecords">0</div>
+                                <div class="stat-label">Registros</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="bannerTotalCities">0</div>
+                                <div class="stat-label">Cidades</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="bannerFilteredCount">0</div>
+                                <div class="stat-label">Filtrados</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="banner-interactive">
+                        <div class="floating-cards">
+                            <div class="data-card card-1">
+                                <div class="card-icon">📊</div>
+                                <div class="card-text">Analytics</div>
+                            </div>
+                            <div class="data-card card-2">
+                                <div class="card-icon">🔍</div>
+                                <div class="card-text">Filtros</div>
+                            </div>
+                            <div class="data-card card-3">
+                                <div class="card-icon">📈</div>
+                                <div class="card-text">Insights</div>
+                            </div>
+                        </div>
+                        
+                        <div class="pulse-animation">
+                            <div class="pulse-ring"></div>
+                            <div class="pulse-ring"></div>
+                            <div class="pulse-ring"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="banner-particles">
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                </div>
+            </div>
+            
+            <!-- Menu de Navegação Moderno -->
+            <section class="nav-section">
+                <div class="nav-wrapper">
+                    <div class="nav-item">
+                        <div class="icon-wrapper" id="icon-one" onclick="activateIcon1()">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5">
+                                <rect x="3" y="3" width="7" height="7"/>
+                                <rect x="14" y="3" width="7" height="7"/>
+                                <rect x="14" y="14" width="7" height="7"/>
+                                <rect x="3" y="14" width="7" height="7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="nav-item">
+                        <div class="icon-wrapper" id="icon-two" onclick="activateIcon2()">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5">
+                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                                <line x1="3" y1="6" x2="21" y2="6"/>
+                                <path d="m16 10-4 4-4-4"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="nav-item">
+                        <div class="icon-wrapper" id="icon-three" onclick="activateIcon3()">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                <polyline points="14,2 14,8 20,8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10,9 9,9 8,9"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="nav-item">
+                        <div class="icon-wrapper" id="icon-four" onclick="activateIcon4()">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div id="squircle"></div>
+                <h3 id="nav-text">Dashboard - Visão Geral dos Dados</h3>
+            </section>
+        </header>
+
+        <main>
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="page-section active">
+                <div class="dashboard-grid">
+                    <div class="stats-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-content">
+                            <h3>Total de Registros</h3>
+                            <span class="stat-number" id="totalRecords">0</span>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stat-icon">🏙️</div>
+                        <div class="stat-content">
+                            <h3>Cidades</h3>
+                            <span class="stat-number" id="totalCities">0</span>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-content">
+                            <h3>Áreas</h3>
+                            <span class="stat-number" id="totalAreas">0</span>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-content">
+                            <h3>Filtrados</h3>
+                            <span class="stat-number" id="filteredRecords">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-charts">
+                    <div class="chart-card">
+                        <h3>📊 Distribuição por Cidade</h3>
+                        <canvas id="cityChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>📈 Análise por Área</h3>
+                        <canvas id="areaChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filters Section -->
+            <section id="filters-section" class="page-section">
+            <div class="input-section">
+                <h2>📋 Dados do Excel</h2>
+                
+                <!-- Opções de entrada -->
+                <div class="input-options">
+                    <div class="option-tabs">
+                        <button class="option-tab active" data-option="paste">
+                            📋 Colar Dados
+                        </button>
+                        <button class="option-tab" data-option="upload">
+                            📁 Importar Arquivo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Área de colar dados -->
+                <div class="input-area" id="pasteArea">
+                    <textarea 
+                        id="excelData" 
+                        placeholder="Cole aqui os dados do seu Excel...&#10;&#10;Exemplo:&#10;SEMANA 17/08/25 - 24/08/25, 16866060000121, 1039907480, SONIA DA CONCEICAO RIBEIRO MATER, SONIA DA CONCEICAO MATERIAIS DE, 03. de 50K a 100K, INATIVO CIELO, 0, 0, 0, 5211, LOJAS DE MATERIAL DE CONSTRUCAO, MATERIAIS PARA CONSTRUÇÃO, 0, 0, 1, 0, 0, 0, ROTA 5, CN - SAO PAULO - 216, , , , , , 1159792995, 11975596131, 11975596131, , , 1159297090, 1159285728, RUA JOAO DOMINGOS (CONDOMINIO ARUA ACAMPAR), 366, , RECANTO CAMPO BELO, SAO PAULO, SP, 4880220&#10;SEMANA 17/08/25 - 24/08/25, 26073681000101, 26073681000101, I. L. MARQUES, IFACE CLINICA, 00. sem histórico, INATIVO CIELO, 0, 0, 0, 8021, DENTISTAS  ORTODONDISTAS - CLINICAS, OUTROS - EDUCAÇÃO, SAÚDE, GOVERNOS, ONGS, ATACADO.., 0, 0, 1, 1, 1, 0, ROTA 1, CN - MAUA - 1, , , , , , , , , , , 1145121043, , RUA CAMPOS SALES, 167, SL 106, VILA BOCAINA, MAUA, SP, 09310040"
+                        rows="15"
+                    ></textarea>
+                </div>
+
+                <!-- Área de upload de arquivo -->
+                <div class="input-area" id="uploadArea" style="display: none;">
+                    <div class="file-upload-container">
+                        <div class="file-upload-area" id="fileUploadArea">
+                            <div class="upload-icon">📁</div>
+                            <h3>Arraste seu arquivo Excel aqui</h3>
+                            <p>ou clique para selecionar</p>
+                            <p class="file-types">Formatos aceitos: .xlsx, .xls (máx. 10MB)</p>
+                            <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+                        </div>
+                        <div class="file-info" id="fileInfo" style="display: none;">
+                            <div class="file-details">
+                                <span class="file-name" id="fileName"></span>
+                                <span class="file-size" id="fileSize"></span>
+                            </div>
+                            <button class="btn-remove" id="removeFile">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="processBtn" class="btn-primary">
+                        🔄 Processar Dados
+                    </button>
+                    <button id="clearBtn" class="btn-secondary">
+                        🗑️ Limpar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Seção de Filtros -->
+            <section id="filtersSection" class="filters-section" style="display: none;">
+                <h2>🔍 Filtros</h2>
+                
+                <!-- Filtros Básicos -->
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="cityFilter">Cidade:</label>
+                        <select id="cityFilter" class="filter-select">
+                            <option value="">Todas as Cidades</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="areaFilter">Área/Bairro:</label>
+                        <select id="areaFilter" class="filter-select">
+                            <option value="">Todas as Áreas</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="searchFilter">Busca Geral:</label>
+                        <input type="text" id="searchFilter" class="filter-input" placeholder="Buscar em todos os campos...">
+                    </div>
+                </div>
+
+                <!-- Filtros Dinâmicos (Estilo Excel) -->
+                <div class="dynamic-filters">
+                    <h3>🎯 Filtros Dinâmicos (Estilo Excel)</h3>
+                    <div class="filter-controls">
+                        <button id="showCityFilterBtn" class="btn-secondary">
+                            🏙️ Filtrar por Cidade
+                        </button>
+                        <button id="showAreaFilterBtn" class="btn-secondary">
+                            📍 Filtrar por Área
+                        </button>
+                        <button id="clearDynamicFiltersBtn" class="btn-secondary">
+                            🗑️ Limpar Filtros
+                        </button>
+                    </div>
+                    
+                    <!-- Filtro Dinâmico de Cidade -->
+                    <div id="dynamicCityFilter" class="dynamic-filter-panel" style="display: none;">
+                        <h4>Selecionar Cidades:</h4>
+                        <div class="filter-options">
+                            <label class="filter-option">
+                                <input type="checkbox" class="city-checkbox" value="select-all">
+                                <span>Selecionar Todas</span>
+                            </label>
+                            <div id="cityCheckboxes" class="checkbox-container">
+                                <!-- Checkboxes serão adicionados dinamicamente -->
+                            </div>
+                        </div>
+                        <div class="filter-actions">
+                            <button id="applyCityFilterBtn" class="btn-primary">
+                                ✅ Aplicar
+                            </button>
+                            <button id="cancelCityFilterBtn" class="btn-secondary">
+                                ❌ Cancelar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtro Dinâmico de Área -->
+                    <div id="dynamicAreaFilter" class="dynamic-filter-panel" style="display: none;">
+                        <h4>Selecionar Áreas:</h4>
+                        <div class="filter-options">
+                            <label class="filter-option">
+                                <input type="checkbox" class="area-checkbox" value="select-all">
+                                <span>Selecionar Todas</span>
+                            </label>
+                            <div id="areaCheckboxes" class="checkbox-container">
+                                <!-- Checkboxes serão adicionados dinamicamente -->
+                            </div>
+                        </div>
+                        <div class="filter-actions">
+                            <button id="applyAreaFilterBtn" class="btn-primary">
+                                ✅ Aplicar
+                            </button>
+                            <button id="cancelAreaFilterBtn" class="btn-secondary">
+                                ❌ Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ordenação -->
+                <div class="sorting-section">
+                    <h3>📊 Ordenação</h3>
+                    <div class="sort-controls">
+                        <select id="sortColumn" class="filter-select">
+                            <option value="">Selecionar coluna</option>
+                        </select>
+                        <select id="sortOrder" class="filter-select">
+                            <option value="asc">Crescente (A-Z)</option>
+                            <option value="desc">Decrescente (Z-A)</option>
+                        </select>
+                        <button id="applySortBtn" class="btn-secondary">
+                            📊 Aplicar Ordenação
+                        </button>
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button id="applyFiltersBtn" class="btn-primary">
+                        🔍 Aplicar Filtros
+                    </button>
+                    <button id="clearFiltersBtn" class="btn-secondary">
+                        🧹 Limpar Filtros
+                    </button>
+                </div>
+            </section>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports-section" class="page-section">
+                <div class="reports-container">
+                    <h2>📊 Relatórios e Análises</h2>
+                    
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <div class="report-icon">📈</div>
+                            <h3>Relatório de Performance</h3>
+                            <p>Análise detalhada dos dados por região e período</p>
+                            <button class="btn-primary" onclick="generatePerformanceReport()">Gerar Relatório</button>
+                        </div>
+                        
+                        <div class="report-card">
+                            <div class="report-icon">🏆</div>
+                            <h3>Top Performers</h3>
+                            <p>Ranking das melhores cidades e áreas</p>
+                            <button class="btn-primary" onclick="generateTopPerformers()">Ver Ranking</button>
+                        </div>
+                        
+                        <div class="report-card">
+                            <div class="report-icon">📊</div>
+                            <h3>Análise Comparativa</h3>
+                            <p>Compare diferentes períodos e regiões</p>
+                            <button class="btn-primary" onclick="generateComparison()">Comparar</button>
+                        </div>
+                        
+                        <div class="report-card">
+                            <div class="report-icon">📋</div>
+                            <h3>Relatório Personalizado</h3>
+                            <p>Crie relatórios sob medida</p>
+                            <button class="btn-primary" onclick="openCustomReport()">Personalizar</button>
+                        </div>
+                    </div>
+                    
+                    <div class="report-results" id="reportResults" style="display: none;">
+                        <h3>📊 Resultados do Relatório</h3>
+                        <div id="reportContent"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings-section" class="page-section">
+                <div class="settings-container">
+                    <h2>⚙️ Configurações</h2>
+                    
+                    <div class="settings-grid">
+                        <div class="setting-group">
+                            <h3>🎨 Aparência</h3>
+                            <div class="setting-item">
+                                <label>Tema:</label>
+                                <select id="themeSelect" class="filter-select">
+                                    <option value="default">Padrão Cielo</option>
+                                    <option value="dark">Escuro</option>
+                                    <option value="light">Claro</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>Transparência:</label>
+                                <input type="range" id="transparencyRange" min="0.1" max="1" step="0.1" value="0.15">
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <h3>📊 Dados</h3>
+                            <div class="setting-item">
+                                <label>Linhas por página:</label>
+                                <select id="rowsPerPage" class="filter-select">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>
+                                    <input type="checkbox" id="autoSave" checked>
+                                    Salvar automaticamente
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <h3>📤 Exportação</h3>
+                            <div class="setting-item">
+                                <label>Formato padrão:</label>
+                                <select id="defaultExport" class="filter-select">
+                                    <option value="csv">CSV</option>
+                                    <option value="excel">Excel</option>
+                                    <option value="pdf">PDF</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>
+                                    <input type="checkbox" id="includeBOM" checked>
+                                    Incluir BOM (UTF-8)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <h3>🔔 Notificações</h3>
+                            <div class="setting-item">
+                                <label>
+                                    <input type="checkbox" id="enableNotifications" checked>
+                                    Ativar notificações
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <label>
+                                    <input type="checkbox" id="soundEnabled">
+                                    Sons de notificação
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-actions">
+                        <button class="btn-primary" onclick="saveSettings()">💾 Salvar Configurações</button>
+                        <button class="btn-secondary" onclick="resetSettings()">🔄 Restaurar Padrão</button>
+                        <button class="btn-secondary" onclick="exportSettings()">📤 Exportar Config</button>
+                        <button class="btn-secondary" onclick="importSettings()">📥 Importar Config</button>
+                    </div>
+                </div>
+            </section>
+
+            <div class="output-section" id="outputSection" style="display: none;">
+                <h2>✅ Dados Filtrados</h2>
+                <div class="file-info-display" id="fileInfoDisplay" style="display: none;">
+                    <div class="info-item">
+                        <span class="info-label">📄 Arquivo:</span>
+                        <span class="info-value" id="displayFileName"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📊 Planilha:</span>
+                        <span class="info-value" id="displaySheetName"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📈 Total de Linhas:</span>
+                        <span class="info-value" id="displayTotalRows"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🎯 Resultados:</span>
+                        <span class="info-value" id="displayFilteredRows"></span>
+                    </div>
+                </div>
+                <div class="output-container">
+                    <div class="output-tabs">
+                        <button class="tab-btn active" data-tab="filtered">Filtrado</button>
+                        <button class="tab-btn" data-tab="original">Original</button>
+                    </div>
+                    <div class="tab-content">
+                        <div id="filteredContent" class="tab-pane active"></div>
+                        <div id="originalContent" class="tab-pane"></div>
+                    </div>
+                </div>
+                <div class="modern-export-actions">
+                    <div class="export-section">
+                        <h4 class="export-title">📤 Exportar Dados</h4>
+                        <div class="export-grid">
+                            <button id="exportCsvBtn" class="modern-btn csv-btn" data-action="csv">
+                                <div class="btn-icon">📄</div>
+                                <div class="btn-content">
+                                    <span class="btn-label">CSV</span>
+                                    <span class="btn-desc">Planilha simples</span>
+                                </div>
+                                <div class="btn-arrow">→</div>
+                    </button>
+                            
+                            <button id="exportExcelBtn" class="modern-btn excel-btn" data-action="excel" onclick="exportToExcel()">
+                                <div class="btn-icon">📊</div>
+                                <div class="btn-content">
+                                    <span class="btn-label">Excel</span>
+                                    <span class="btn-desc">Formatado</span>
+                                </div>
+                                <div class="btn-arrow">→</div>
+                    </button>
+                            
+                            <button id="exportPdfBtn" class="modern-btn pdf-btn" data-action="pdf" onclick="exportToPdf()">
+                                <div class="btn-icon">📑</div>
+                                <div class="btn-content">
+                                    <span class="btn-label">PDF</span>
+                                    <span class="btn-desc">Relatório</span>
+                                </div>
+                                <div class="btn-arrow">→</div>
+                    </button>
+                            
+                            <button id="copyToClipboardBtn" class="modern-btn clipboard-btn" data-action="clipboard">
+                                <div class="btn-icon">📋</div>
+                                <div class="btn-content">
+                                    <span class="btn-label">Copiar</span>
+                                    <span class="btn-desc">Área de transfer.</span>
+                                </div>
+                                <div class="btn-arrow">→</div>
+                    </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Processando seus dados...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>✨ Cielo - Soluções em Tecnologia e Pagamentos</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 

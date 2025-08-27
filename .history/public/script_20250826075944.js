@@ -1,0 +1,1423 @@
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar se todos os elementos necessários existem
+    const excelData = document.getElementById('excelData');
+    const processBtn = document.getElementById('processBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const outputSection = document.getElementById('outputSection');
+    const filtersSection = document.getElementById('filtersSection');
+    const loading = document.getElementById('loading');
+    const filteredContent = document.getElementById('filteredContent');
+    const originalContent = document.getElementById('originalContent');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    
+    // Elementos de upload
+    const optionTabs = document.querySelectorAll('.option-tab');
+    const pasteArea = document.getElementById('pasteArea');
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removeFile = document.getElementById('removeFile');
+    
+    // Elementos de filtro
+    const cityFilter = document.getElementById('cityFilter');
+    const areaFilter = document.getElementById('areaFilter');
+    const searchFilter = document.getElementById('searchFilter');
+    const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+    
+    // Elementos de filtros avançados
+    const addFilterBtn = document.getElementById('addFilterBtn');
+    const clearAllFiltersBtn = document.getElementById('clearAllFiltersBtn');
+    const advancedFiltersContainer = document.getElementById('advancedFiltersContainer');
+    
+    // Elementos de ordenação
+    const sortColumn = document.getElementById('sortColumn');
+    const sortOrder = document.getElementById('sortOrder');
+    const applySortBtn = document.getElementById('applySortBtn');
+    
+    // Elementos de informação do arquivo
+    const fileInfoDisplay = document.getElementById('fileInfoDisplay');
+    const displayFileName = document.getElementById('displayFileName');
+    const displaySheetName = document.getElementById('displaySheetName');
+    const displayTotalRows = document.getElementById('displayTotalRows');
+    const displayFilteredRows = document.getElementById('displayFilteredRows');
+    
+    // Elementos de exportação
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    const copyToClipboardBtn = document.getElementById('copyToClipboardBtn');
+
+    let currentData = null;
+    let currentFile = null;
+    let originalData = null;
+    let filteredData = null;
+    let headers = [];
+    let isExcelFile = false;
+
+    // Verificar se elementos críticos existem
+    if (!excelData || !processBtn || !fileInput || !fileUploadArea) {
+        console.error('Elementos críticos não encontrados!');
+        showNotification('Erro: Elementos da interface não encontrados!', 'error');
+        return;
+    }
+
+    // Event listeners básicos
+    if (processBtn) processBtn.addEventListener('click', processData);
+    if (clearBtn) clearBtn.addEventListener('click', clearData);
+    if (applyFiltersBtn) applyFiltersBtn.addEventListener('click', applyFilters);
+    if (clearFiltersBtn) clearFiltersBtn.addEventListener('click', clearFilters);
+    if (exportCsvBtn) exportCsvBtn.addEventListener('click', exportToCsv);
+    if (exportExcelBtn) exportExcelBtn.addEventListener('click', exportToExcel);
+    if (exportPdfBtn) exportPdfBtn.addEventListener('click', exportToPdf);
+    if (copyToClipboardBtn) copyToClipboardBtn.addEventListener('click', copyToClipboard);
+    
+    // Event listeners para filtros avançados
+    if (addFilterBtn) addFilterBtn.addEventListener('click', addAdvancedFilter);
+    if (clearAllFiltersBtn) clearAllFiltersBtn.addEventListener('click', clearAllFilters);
+    if (applySortBtn) applySortBtn.addEventListener('click', applySorting);
+    
+    // Event listeners para filtros dinâmicos
+    const showCityFilterBtn = document.getElementById('showCityFilterBtn');
+    const showAreaFilterBtn = document.getElementById('showAreaFilterBtn');
+    const clearDynamicFiltersBtn = document.getElementById('clearDynamicFiltersBtn');
+    const applyCityFilterBtn = document.getElementById('applyCityFilterBtn');
+    const applyAreaFilterBtn = document.getElementById('applyAreaFilterBtn');
+    const cancelCityFilterBtn = document.getElementById('cancelCityFilterBtn');
+    const cancelAreaFilterBtn = document.getElementById('cancelAreaFilterBtn');
+    
+    if (showCityFilterBtn) showCityFilterBtn.addEventListener('click', showCityFilter);
+    if (showAreaFilterBtn) showAreaFilterBtn.addEventListener('click', showAreaFilter);
+    if (clearDynamicFiltersBtn) clearDynamicFiltersBtn.addEventListener('click', clearDynamicFilters);
+    if (applyCityFilterBtn) applyCityFilterBtn.addEventListener('click', applyCityFilter);
+    if (applyAreaFilterBtn) applyAreaFilterBtn.addEventListener('click', applyAreaFilter);
+    if (cancelCityFilterBtn) cancelCityFilterBtn.addEventListener('click', hideCityFilter);
+    if (cancelAreaFilterBtn) cancelAreaFilterBtn.addEventListener('click', hideAreaFilter);
+
+    // Tab switching
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            switchTab(tab);
+        });
+    });
+
+    // Option tabs switching
+    optionTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const option = tab.dataset.option;
+            switchOption(option);
+        });
+    });
+
+    // File upload events - VERIFICAR SE ELEMENTOS EXISTEM
+    if (fileUploadArea && fileInput) {
+        fileUploadArea.addEventListener('click', () => {
+            console.log('Clicando no fileInput...');
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', (event) => {
+            console.log('Arquivo selecionado:', event.target.files[0]);
+            handleFileSelect(event);
+        });
+    }
+    
+    if (removeFile) {
+        removeFile.addEventListener('click', removeSelectedFile);
+    }
+    
+    // Drag and drop
+    if (fileUploadArea) {
+        fileUploadArea.addEventListener('dragover', handleDragOver);
+        fileUploadArea.addEventListener('drop', handleDrop);
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') {
+            processData();
+        }
+        if (e.ctrlKey && e.key === 'l') {
+            clearData();
+        }
+    });
+
+    function switchOption(option) {
+        // Remover classe active de todas as abas
+        optionTabs.forEach(tab => tab.classList.remove('active'));
+        
+        // Adicionar classe active à aba selecionada
+        const selectedTab = document.querySelector(`[data-option="${option}"]`);
+        if (selectedTab) {
+            selectedTab.classList.add('active');
+        }
+        
+        // Mostrar área correspondente
+        if (option === 'paste' && pasteArea && uploadArea) {
+            pasteArea.style.display = 'block';
+            uploadArea.style.display = 'none';
+        } else if (uploadArea && pasteArea) {
+            pasteArea.style.display = 'none';
+            uploadArea.style.display = 'block';
+        }
+    }
+
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            console.log('Arquivo selecionado:', file.name, file.size, file.type);
+            processSelectedFile(file);
+        }
+    }
+
+    function handleDragOver(event) {
+        event.preventDefault();
+        if (fileUploadArea) {
+            fileUploadArea.style.borderColor = 'var(--cielo-laranja)';
+            fileUploadArea.style.background = 'var(--cielo-bg-hover)';
+        }
+    }
+
+    function handleDrop(event) {
+        event.preventDefault();
+        if (fileUploadArea) {
+            fileUploadArea.style.borderColor = 'var(--cielo-azul-principal)';
+            fileUploadArea.style.background = 'var(--cielo-bg-escuro)';
+        }
+        
+        const files = event.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            console.log('Arquivo dropado:', file.name, file.type);
+            
+            if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+                file.type === 'application/vnd.ms-excel' ||
+                file.name.endsWith('.xlsx') ||
+                file.name.endsWith('.xls')) {
+                processSelectedFile(file);
+            } else {
+                showNotification('Por favor, selecione apenas arquivos Excel (.xlsx, .xls)', 'error');
+            }
+        }
+    }
+
+    function processSelectedFile(file) {
+        currentFile = file;
+        
+        // Mostrar informações do arquivo
+        if (fileName) fileName.textContent = file.name;
+        if (fileSize) fileSize.textContent = formatFileSize(file.size);
+        
+        if (fileUploadArea) fileUploadArea.style.display = 'none';
+        if (fileInfo) fileInfo.style.display = 'flex';
+        
+        showNotification(`Arquivo "${file.name}" selecionado com sucesso!`, 'success');
+    }
+
+    function removeSelectedFile() {
+        currentFile = null;
+        if (fileInput) fileInput.value = '';
+        
+        if (fileUploadArea) fileUploadArea.style.display = 'block';
+        if (fileInfo) fileInfo.style.display = 'none';
+        
+        showNotification('Arquivo removido!', 'info');
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    async function processData() {
+        const activeOption = document.querySelector('.option-tab.active');
+        if (!activeOption) {
+            showNotification('Selecione uma opção de entrada!', 'error');
+            return;
+        }
+        
+        const option = activeOption.dataset.option;
+        
+        if (option === 'paste') {
+            await processPastedData();
+        } else {
+            await processUploadedFile();
+        }
+    }
+
+    async function processPastedData() {
+        if (!excelData) {
+            showNotification('Elemento de dados não encontrado!', 'error');
+            return;
+        }
+        
+        const data = excelData.value.trim();
+        
+        if (!data) {
+            showNotification('Por favor, cole alguns dados do Excel primeiro!', 'error');
+            return;
+        }
+
+        showLoading(true);
+        
+        try {
+            const response = await fetch('/api/format-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ data })
+            });
+
+            const result = await response.json();
+            
+            if (response.ok) {
+                currentData = result;
+                isExcelFile = false;
+                processDataForFiltering(result.original);
+                showNotification('Dados processados com sucesso!', 'success');
+            } else {
+                throw new Error(result.error || 'Erro ao processar dados');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            showNotification('Erro ao processar dados: ' + error.message, 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function processUploadedFile() {
+        if (!currentFile) {
+            showNotification('Por favor, selecione um arquivo Excel primeiro!', 'error');
+            return;
+        }
+
+        showLoading(true);
+        
+        try {
+            console.log('Iniciando upload do arquivo:', currentFile.name);
+            
+            const formData = new FormData();
+            formData.append('excelFile', currentFile);
+
+            console.log('Enviando requisição para /api/upload-excel...');
+            
+            const response = await fetch('/api/upload-excel', {
+                method: 'POST',
+                body: formData
+            });
+
+            console.log('Resposta recebida:', response.status, response.statusText);
+            
+            const result = await response.json();
+            console.log('Resultado:', result);
+            
+            if (response.ok) {
+                currentData = result;
+                isExcelFile = true;
+                processDataForFiltering(result.original);
+                showNotification('Arquivo processado com sucesso!', 'success');
+            } else {
+                throw new Error(result.error || 'Erro ao processar arquivo');
+            }
+        } catch (error) {
+            console.error('Erro detalhado:', error);
+            showNotification('Erro ao processar arquivo: ' + error.message, 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function processDataForFiltering(data) {
+        // Parse CSV data
+        const lines = data.split('\n').filter(line => line.trim());
+        if (lines.length === 0) {
+            showNotification('Nenhum dado válido encontrado!', 'error');
+            return;
+        }
+
+        // Extract headers
+        headers = lines[0].split(',').map(h => h.trim());
+        
+        // Parse data rows
+        originalData = lines.slice(1).map(line => {
+            const values = line.split(',').map(v => v.trim());
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header] = values[index] || '';
+            });
+            return row;
+        });
+
+        // DEBUG: Analisar estrutura dos dados
+        debugDataStructure();
+
+        // Populate filter options
+        populateFilters();
+        
+        // Show filters section
+        filtersSection.style.display = 'block';
+        
+        // Apply initial filters (show all data)
+        applyFilters();
+        
+        // Show file info if available
+        if (currentData.filename) {
+            displayFileName.textContent = currentData.filename;
+            displaySheetName.textContent = currentData.sheetName || 'N/A';
+            displayTotalRows.textContent = originalData.length;
+            fileInfoDisplay.style.display = 'grid';
+        } else {
+            displayTotalRows.textContent = originalData.length;
+            fileInfoDisplay.style.display = 'grid';
+        }
+        
+        // Scroll to filters
+        filtersSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function debugDataStructure() {
+        console.log('=== DEBUG: ESTRUTURA DOS DADOS ===');
+        console.log('Total de registros:', originalData.length);
+        console.log('Headers:', headers);
+        
+        // Analisar cada coluna
+        headers.forEach((header, index) => {
+            const values = originalData.map(row => row[header]).filter(val => val && val.trim());
+            const uniqueValues = [...new Set(values)];
+            
+            console.log(`Coluna ${index + 1}: "${header}"`);
+            console.log(`  - Total de valores não vazios: ${values.length}`);
+            console.log(`  - Valores únicos: ${uniqueValues.length}`);
+            console.log(`  - Primeiros 10 valores únicos:`, uniqueValues.slice(0, 10));
+            
+            // Verificar se contém valores específicos
+            const hasMaua = uniqueValues.some(val => val === 'MAUA');
+            const hasSP = uniqueValues.some(val => val === 'SP');
+            const hasRota = uniqueValues.some(val => val && val.toString().startsWith('ROTA'));
+            const hasCNMaua = uniqueValues.some(val => val && val.toString().includes('CN - MAUA'));
+            
+            if (hasMaua || hasSP || hasRota || hasCNMaua) {
+                console.log(`  - CONTÉM: MAUA=${hasMaua}, SP=${hasSP}, ROTA=${hasRota}, CN-MAUA=${hasCNMaua}`);
+            }
+        });
+        
+        // Mostrar alguns registros de exemplo
+        console.log('Primeiros 3 registros completos:');
+        originalData.slice(0, 3).forEach((row, index) => {
+            console.log(`Registro ${index + 1}:`, row);
+        });
+    }
+
+    function populateFilters() {
+        // Clear existing options
+        cityFilter.innerHTML = '<option value="">Todas as cidades</option>';
+        areaFilter.innerHTML = '<option value="">Todas as áreas</option>';
+        sortColumn.innerHTML = '<option value="">Selecionar coluna</option>';
+        
+        console.log('=== INICIANDO DETECÇÃO DE COLUNAS ===');
+        console.log('Headers encontrados:', headers);
+        console.log('Total de registros:', originalData.length);
+        
+        // Detectar automaticamente as colunas de cidade e área
+        let cityColumn = detectCityColumn();
+        let areaColumn = detectAreaColumn();
+        
+        console.log('Coluna de cidade detectada:', cityColumn);
+        console.log('Coluna de área detectada:', areaColumn);
+        
+        // Armazenar as colunas globalmente
+        window.cityColumn = cityColumn;
+        window.areaColumn = areaColumn;
+        
+        // Popular dropdown de cidades
+        if (cityColumn) {
+            populateCityDropdown(cityColumn);
+        }
+        
+        // Popular dropdown de áreas
+        if (areaColumn) {
+            populateAreaDropdown(areaColumn);
+        }
+        
+        // Adicionar todas as colunas ao dropdown de ordenação
+        headers.forEach(header => {
+            const sortOption = document.createElement('option');
+            sortOption.value = header;
+            sortOption.textContent = header;
+            sortColumn.appendChild(sortOption);
+        });
+        
+        // Event listeners
+        cityFilter.addEventListener('change', function() {
+            const selectedCity = this.value;
+            console.log('Cidade selecionada:', selectedCity);
+            updateAreaDropdown(selectedCity);
+            areaFilter.value = '';
+            applyFilters();
+        });
+        
+        areaFilter.addEventListener('change', function() {
+            const selectedArea = this.value;
+            console.log('Área selecionada:', selectedArea);
+            applyFilters();
+        });
+    }
+    
+    function detectCityColumn() {
+        // Procurar por colunas que contenham valores de cidade
+        for (let header of headers) {
+            const values = originalData.map(row => row[header]).filter(val => val && val.trim());
+            const uniqueValues = [...new Set(values)];
+            
+            // Verificar se contém valores de cidade conhecidos
+            const hasCityValues = uniqueValues.some(val => 
+                ['MAUA', 'SAO PAULO', 'SANTO ANDRE', 'SP'].includes(val.toString().trim())
+            );
+            
+            if (hasCityValues) {
+                console.log(`Coluna de cidade encontrada: "${header}"`);
+                console.log('Valores de cidade:', uniqueValues.filter(val => 
+                    ['MAUA', 'SAO PAULO', 'SANTO ANDRE', 'SP'].includes(val.toString().trim())
+                ));
+                return header;
+            }
+        }
+        
+        // Fallback: procurar por nomes de colunas
+        const cityKeywords = ['cidade', 'city', 'municipio', 'local', 'nm_municipio'];
+        for (let header of headers) {
+            if (cityKeywords.some(keyword => header.toLowerCase().includes(keyword))) {
+                console.log(`Coluna de cidade encontrada por nome: "${header}"`);
+                return header;
+            }
+        }
+        
+        return null;
+    }
+    
+    function detectAreaColumn() {
+        // Procurar por colunas que contenham valores de área/rota
+        for (let header of headers) {
+            const values = originalData.map(row => row[header]).filter(val => val && val.trim());
+            const uniqueValues = [...new Set(values)];
+            
+            // Verificar se contém valores de área conhecidos
+            const hasAreaValues = uniqueValues.some(val => {
+                const strVal = val.toString().trim();
+                return strVal.startsWith('ROTA') || 
+                       strVal.includes('CN - MAUA') || 
+                       strVal.includes('CN - SAO PAULO');
+            });
+            
+            if (hasAreaValues) {
+                console.log(`Coluna de área encontrada: "${header}"`);
+                console.log('Valores de área:', uniqueValues.filter(val => {
+                    const strVal = val.toString().trim();
+                    return strVal.startsWith('ROTA') || 
+                           strVal.includes('CN - MAUA') || 
+                           strVal.includes('CN - SAO PAULO');
+                }));
+                return header;
+            }
+        }
+        
+        // Fallback: procurar por nomes de colunas
+        const areaKeywords = ['area', 'rota', 'bairro', 'zona', 'regiao', 'nm_geo'];
+        for (let header of headers) {
+            if (areaKeywords.some(keyword => header.toLowerCase().includes(keyword))) {
+                console.log(`Coluna de área encontrada por nome: "${header}"`);
+                return header;
+            }
+        }
+        
+        return null;
+    }
+    
+    function populateCityDropdown(cityColumn) {
+        const cities = [...new Set(originalData.map(row => row[cityColumn]).filter(val => val && val.trim()))];
+        
+        // Filtrar apenas cidades válidas
+        const validCities = cities.filter(city => {
+            const cityValue = city.toString().trim();
+            return ['MAUA', 'SAO PAULO', 'SANTO ANDRE', 'SP'].includes(cityValue);
+        });
+        
+        console.log('Cidades válidas encontradas:', validCities);
+        
+        validCities.sort().forEach(city => {
+            const option = document.createElement('option');
+            option.value = city;
+            option.textContent = city;
+            cityFilter.appendChild(option);
+        });
+    }
+    
+    function populateAreaDropdown(areaColumn) {
+        const areas = [...new Set(originalData.map(row => row[areaColumn]).filter(val => val && val.trim()))];
+        
+        // Filtrar apenas áreas válidas
+        const validAreas = areas.filter(area => {
+            const areaValue = area.toString().trim();
+            
+            // Incluir ROTAs
+            if (areaValue.startsWith('ROTA')) return true;
+            
+            // Incluir códigos CN
+            if (areaValue.includes('CN - MAUA') || areaValue.includes('CN - SAO PAULO')) return true;
+            
+            // Excluir valores que claramente não são áreas
+            if (/^SEMANA/.test(areaValue)) return false;
+            if (/^INATIVO/.test(areaValue)) return false;
+            if (/^FRANQUIAS/.test(areaValue)) return false;
+            if (/^PROSPECT/.test(areaValue)) return false;
+            
+            // Incluir outros valores que parecem áreas
+            return areaValue.length >= 3;
+        });
+        
+        console.log('Áreas válidas encontradas:', validAreas);
+        
+        validAreas.sort().forEach(area => {
+            const option = document.createElement('option');
+            option.value = area;
+            option.textContent = area;
+            areaFilter.appendChild(option);
+        });
+    }
+    
+    function updateAreaDropdown(selectedCity) {
+        if (!window.areaColumn || !window.cityColumn) return;
+        
+        // Limpar dropdown de áreas
+        areaFilter.innerHTML = '<option value="">Todas as áreas</option>';
+        
+        // Filtrar dados pela cidade selecionada
+        let filteredData = originalData;
+        if (selectedCity) {
+            filteredData = originalData.filter(row => row[window.cityColumn] === selectedCity);
+        }
+        
+        console.log(`Atualizando áreas para cidade "${selectedCity}":`, filteredData.length, 'registros');
+        
+        // Pegar áreas únicas dos dados filtrados
+        const areas = [...new Set(filteredData.map(row => row[window.areaColumn]).filter(val => val && val.trim()))];
+        
+        // Filtrar apenas áreas válidas
+        const validAreas = areas.filter(area => {
+            const areaValue = area.toString().trim();
+            
+            // Incluir ROTAs
+            if (areaValue.startsWith('ROTA')) return true;
+            
+            // Incluir códigos CN
+            if (areaValue.includes('CN - MAUA') || areaValue.includes('CN - SAO PAULO')) return true;
+            
+            // Excluir valores que claramente não são áreas
+            if (/^SEMANA/.test(areaValue)) return false;
+            if (/^INATIVO/.test(areaValue)) return false;
+            if (/^FRANQUIAS/.test(areaValue)) return false;
+            if (/^PROSPECT/.test(areaValue)) return false;
+            
+            // Incluir outros valores que parecem áreas
+            return areaValue.length >= 3;
+        });
+        
+        console.log(`Áreas encontradas para "${selectedCity}":`, validAreas);
+        
+        validAreas.sort().forEach(area => {
+            const option = document.createElement('option');
+            option.value = area;
+            option.textContent = area;
+            areaFilter.appendChild(option);
+        });
+    }
+
+    // Funções para filtros avançados
+    function addAdvancedFilter() {
+        const filterRow = document.createElement('div');
+        filterRow.className = 'filter-row';
+        filterRow.innerHTML = `
+            <select class="filter-select filter-column">
+                <option value="">Selecionar coluna</option>
+                ${headers.map(header => `<option value="${header}">${header}</option>`).join('')}
+            </select>
+            <select class="filter-select filter-operator">
+                <option value="equals">Igual a</option>
+                <option value="contains">Contém</option>
+                <option value="starts_with">Começa com</option>
+                <option value="ends_with">Termina com</option>
+                <option value="greater_than">Maior que</option>
+                <option value="less_than">Menor que</option>
+                <option value="greater_equal">Maior ou igual</option>
+                <option value="less_equal">Menor ou igual</option>
+                <option value="not_equals">Diferente de</option>
+            </select>
+            <input type="text" class="filter-input filter-value" placeholder="Valor...">
+            <select class="filter-select filter-logic">
+                <option value="AND">E (AND)</option>
+                <option value="OR">OU (OR)</option>
+            </select>
+            <button class="remove-filter-btn" onclick="removeFilter(this)">✕</button>
+        `;
+        
+        advancedFiltersContainer.appendChild(filterRow);
+    }
+
+    function removeFilter(button) {
+        button.parentElement.remove();
+    }
+
+    function clearAllFilters() {
+        advancedFiltersContainer.innerHTML = '';
+        cityFilter.value = '';
+        areaFilter.value = '';
+        searchFilter.value = '';
+        sortColumn.value = '';
+        sortOrder.value = 'asc';
+    }
+
+    function applySorting() {
+        const column = sortColumn.value;
+        const order = sortOrder.value;
+        
+        if (!column) {
+            showNotification('Selecione uma coluna para ordenar!', 'warning');
+            return;
+        }
+        
+        if (filteredData) {
+            filteredData.sort((a, b) => {
+                let aVal = a[column] || '';
+                let bVal = b[column] || '';
+                
+                // Tentar converter para número se possível
+                const aNum = parseFloat(aVal);
+                const bNum = parseFloat(bVal);
+                
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    aVal = aNum;
+                    bVal = bNum;
+                } else {
+                    // Comparação de strings
+                    aVal = aVal.toString().toLowerCase();
+                    bVal = bVal.toString().toLowerCase();
+                }
+                
+                if (order === 'asc') {
+                    return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+                } else {
+                    return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+                }
+            });
+            
+            displayResults();
+            showNotification(`Dados ordenados por ${column} (${order === 'asc' ? 'crescente' : 'decrescente'})`, 'success');
+        }
+    }
+
+    function applyFilters() {
+        if (!originalData) return;
+        
+        let filtered = [...originalData];
+        
+        const cityColumn = window.cityColumn;
+        const areaColumn = window.areaColumn;
+        
+        console.log('=== APLICANDO FILTROS ===');
+        console.log('Coluna cidade:', cityColumn);
+        console.log('Coluna área:', areaColumn);
+        console.log('Total de registros originais:', originalData.length);
+        
+        // Filter by city
+        const selectedCity = cityFilter ? cityFilter.value : '';
+        if (selectedCity && cityColumn) {
+            console.log('Filtrando por cidade:', selectedCity);
+            
+            // Mostrar estatísticas antes do filtro
+            const cityStats = getColumnStats(originalData, cityColumn);
+            console.log('Estatísticas da coluna cidade:', cityStats);
+            
+            filtered = filtered.filter(row => row[cityColumn] === selectedCity);
+            console.log('Registros após filtro de cidade:', filtered.length);
+            
+            // Mostrar alguns exemplos dos registros filtrados
+            if (filtered.length > 0) {
+                console.log('Exemplos de registros filtrados por cidade:');
+                filtered.slice(0, 3).forEach((row, index) => {
+                    console.log(`  ${index + 1}. ${row[cityColumn]} - ${row[areaColumn] || 'Sem área'}`);
+                });
+            }
+        }
+        
+        // Filter by area
+        const selectedArea = areaFilter.value;
+        if (selectedArea && areaColumn) {
+            console.log('Filtrando por área:', selectedArea);
+            
+            // Mostrar estatísticas da área antes do filtro
+            const areaStats = getColumnStats(filtered, areaColumn);
+            console.log('Estatísticas da coluna área (após filtro de cidade):', areaStats);
+            
+            filtered = filtered.filter(row => row[areaColumn] === selectedArea);
+            console.log('Registros após filtro de área:', filtered.length);
+        }
+        
+        // Filter by search term
+        const searchTerm = searchFilter.value.toLowerCase();
+        if (searchTerm) {
+            console.log('Filtrando por termo de busca:', searchTerm);
+            filtered = filtered.filter(row => {
+                return Object.values(row).some(value => 
+                    value.toString().toLowerCase().includes(searchTerm)
+                );
+            });
+            console.log('Registros após filtro de busca:', filtered.length);
+        }
+        
+        // Aplicar filtros avançados
+        if (advancedFiltersContainer) {
+            const advancedFilters = advancedFiltersContainer.querySelectorAll('.filter-row');
+            if (advancedFilters.length > 0) {
+                console.log('Aplicando filtros avançados...');
+                
+                advancedFilters.forEach((filterRow, index) => {
+                    const column = filterRow.querySelector('.filter-column');
+                    const operator = filterRow.querySelector('.filter-operator');
+                    const value = filterRow.querySelector('.filter-value');
+                    const logic = filterRow.querySelector('.filter-logic');
+                    
+                    if (column && operator && value && logic) {
+                        const columnValue = column.value;
+                        const operatorValue = operator.value;
+                        const valueValue = value.value;
+                        const logicValue = logic.value;
+                
+                        if (columnValue && valueValue) {
+                            console.log(`Filtro ${index + 1}: ${columnValue} ${operatorValue} "${valueValue}" (${logicValue})`);
+                            
+                            filtered = filtered.filter(row => {
+                                const cellValue = row[columnValue] || '';
+                                let matches = false;
+                                
+                                switch (operatorValue) {
+                                    case 'equals':
+                                        matches = cellValue.toString() === valueValue;
+                                        break;
+                                    case 'contains':
+                                        matches = cellValue.toString().toLowerCase().includes(valueValue.toLowerCase());
+                                        break;
+                                    case 'starts_with':
+                                        matches = cellValue.toString().toLowerCase().startsWith(valueValue.toLowerCase());
+                                        break;
+                                    case 'ends_with':
+                                        matches = cellValue.toString().toLowerCase().endsWith(valueValue.toLowerCase());
+                                        break;
+                                    case 'greater_than':
+                                        matches = parseFloat(cellValue) > parseFloat(valueValue);
+                                        break;
+                                    case 'less_than':
+                                        matches = parseFloat(cellValue) < parseFloat(valueValue);
+                                        break;
+                                    case 'greater_equal':
+                                        matches = parseFloat(cellValue) >= parseFloat(valueValue);
+                                        break;
+                                    case 'less_equal':
+                                        matches = parseFloat(cellValue) <= parseFloat(valueValue);
+                                        break;
+                                    case 'not_equals':
+                                        matches = cellValue.toString() !== valueValue;
+                                        break;
+                                }
+                                
+                                return matches;
+                            });
+                            
+                            console.log(`Registros após filtro ${index + 1}:`, filtered.length);
+                        }
+                    }
+                });
+            }
+        }
+        
+        filteredData = filtered;
+        
+        console.log('=== RESULTADO FINAL ===');
+        console.log('Total de registros filtrados:', filtered.length);
+        
+        // Mostrar resumo dos filtros aplicados
+        const appliedFilters = [];
+        if (selectedCity) appliedFilters.push(`Cidade: ${selectedCity}`);
+        if (selectedArea) appliedFilters.push(`Área: ${selectedArea}`);
+        if (searchTerm) appliedFilters.push(`Busca: "${searchTerm}"`);
+        
+        // Contar filtros avançados
+        let advancedFilterCount = 0;
+        if (advancedFiltersContainer) {
+            const advancedFilters = advancedFiltersContainer.querySelectorAll('.filter-row');
+            advancedFilterCount = advancedFilters.length;
+        }
+        if (advancedFilterCount > 0) appliedFilters.push(`${advancedFilterCount} filtro(s) avançado(s)`);
+        
+        if (appliedFilters.length > 0) {
+            console.log('Filtros aplicados:', appliedFilters.join(', '));
+        }
+        
+        displayResults();
+        
+        // Mostrar notificação
+        const totalFilters = (selectedCity ? 1 : 0) + (selectedArea ? 1 : 0) + (searchTerm ? 1 : 0) + advancedFilters.length;
+        if (totalFilters > 0) {
+            showNotification(`${totalFilters} filtro(s) aplicado(s) - ${filtered.length} registros encontrados`, 'success');
+        }
+    }
+    
+    function getColumnStats(data, column) {
+        const values = data.map(row => row[column]).filter(val => val && val.trim());
+        const uniqueValues = [...new Set(values)];
+        
+        return {
+            total: values.length,
+            unique: uniqueValues.length,
+            sample: uniqueValues.slice(0, 10)
+        };
+    }
+    
+    // Funções para filtros dinâmicos (Estilo Excel)
+    function showCityFilter() {
+        const dynamicCityFilter = document.getElementById('dynamicCityFilter');
+        const cityCheckboxes = document.getElementById('cityCheckboxes');
+        
+        if (!window.cityColumn) {
+            showNotification('Coluna de cidade não detectada!', 'error');
+            return;
+        }
+        
+        // Limpar checkboxes existentes
+        cityCheckboxes.innerHTML = '';
+        
+        // Pegar todas as cidades únicas
+        const cities = [...new Set(originalData.map(row => row[window.cityColumn]).filter(val => val && val.trim()))];
+        const validCities = cities.filter(city => {
+            const cityValue = city.toString().trim();
+            return ['MAUA', 'SAO PAULO', 'SANTO ANDRE', 'SP'].includes(cityValue);
+        });
+        
+        console.log('Criando filtro dinâmico para cidades:', validCities);
+        
+        // Criar checkboxes para cada cidade
+        validCities.sort().forEach(city => {
+            const label = document.createElement('label');
+            label.className = 'filter-option';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'city-checkbox';
+            checkbox.value = city;
+            
+            const span = document.createElement('span');
+            span.textContent = city;
+            
+            label.appendChild(checkbox);
+            label.appendChild(span);
+            cityCheckboxes.appendChild(label);
+        });
+        
+        // Mostrar painel
+        dynamicCityFilter.style.display = 'block';
+        
+        // Configurar "Selecionar Todas"
+        const selectAllCheckbox = document.querySelector('.city-checkbox[value="select-all"]');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const allCheckboxes = document.querySelectorAll('.city-checkbox:not([value="select-all"])');
+                allCheckboxes.forEach(cb => cb.checked = this.checked);
+            });
+        }
+    }
+    
+    function showAreaFilter() {
+        const dynamicAreaFilter = document.getElementById('dynamicAreaFilter');
+        const areaCheckboxes = document.getElementById('areaCheckboxes');
+        
+        if (!window.areaColumn) {
+            showNotification('Coluna de área não detectada!', 'error');
+            return;
+        }
+        
+        // Limpar checkboxes existentes
+        areaCheckboxes.innerHTML = '';
+        
+        // Pegar todas as áreas únicas
+        const areas = [...new Set(originalData.map(row => row[window.areaColumn]).filter(val => val && val.trim()))];
+        const validAreas = areas.filter(area => {
+            const areaValue = area.toString().trim();
+            
+            // Incluir ROTAs
+            if (areaValue.startsWith('ROTA')) return true;
+            
+            // Incluir códigos CN
+            if (areaValue.includes('CN - MAUA') || areaValue.includes('CN - SAO PAULO')) return true;
+            
+            // Excluir valores que claramente não são áreas
+            if (/^SEMANA/.test(areaValue)) return false;
+            if (/^INATIVO/.test(areaValue)) return false;
+            if (/^FRANQUIAS/.test(areaValue)) return false;
+            if (/^PROSPECT/.test(areaValue)) return false;
+            
+            // Incluir outros valores que parecem áreas
+            return areaValue.length >= 3;
+        });
+        
+        console.log('Criando filtro dinâmico para áreas:', validAreas);
+        
+        // Criar checkboxes para cada área
+        validAreas.sort().forEach(area => {
+            const label = document.createElement('label');
+            label.className = 'filter-option';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'area-checkbox';
+            checkbox.value = area;
+            
+            const span = document.createElement('span');
+            span.textContent = area;
+            
+            label.appendChild(checkbox);
+            label.appendChild(span);
+            areaCheckboxes.appendChild(label);
+        });
+        
+        // Mostrar painel
+        dynamicAreaFilter.style.display = 'block';
+        
+        // Configurar "Selecionar Todas"
+        const selectAllCheckbox = document.querySelector('.area-checkbox[value="select-all"]');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const allCheckboxes = document.querySelectorAll('.area-checkbox:not([value="select-all"])');
+                allCheckboxes.forEach(cb => cb.checked = this.checked);
+            });
+        }
+    }
+    
+    function hideCityFilter() {
+        const dynamicCityFilter = document.getElementById('dynamicCityFilter');
+        dynamicCityFilter.style.display = 'none';
+    }
+    
+    function hideAreaFilter() {
+        const dynamicAreaFilter = document.getElementById('dynamicAreaFilter');
+        dynamicAreaFilter.style.display = 'none';
+    }
+    
+    function applyCityFilter() {
+        const selectedCities = Array.from(document.querySelectorAll('.city-checkbox:checked:not([value="select-all"])'))
+            .map(cb => cb.value);
+        
+        console.log('Cidades selecionadas:', selectedCities);
+        
+        if (selectedCities.length === 0) {
+            showNotification('Selecione pelo menos uma cidade!', 'warning');
+            return;
+        }
+        
+        // Aplicar filtro
+        let filtered = originalData.filter(row => {
+            const cityValue = row[window.cityColumn];
+            return selectedCities.includes(cityValue);
+        });
+        
+        filteredData = filtered;
+        displayResults();
+        
+        // Atualizar dropdown de cidade
+        cityFilter.value = selectedCities.length === 1 ? selectedCities[0] : '';
+        
+        // Esconder painel
+        hideCityFilter();
+        
+        showNotification(`${selectedCities.length} cidade(s) selecionada(s) - ${filtered.length} registros encontrados`, 'success');
+    }
+    
+    function applyAreaFilter() {
+        const selectedAreas = Array.from(document.querySelectorAll('.area-checkbox:checked:not([value="select-all"])'))
+            .map(cb => cb.value);
+        
+        console.log('Áreas selecionadas:', selectedAreas);
+        
+        if (selectedAreas.length === 0) {
+            showNotification('Selecione pelo menos uma área!', 'warning');
+            return;
+        }
+        
+        // Aplicar filtro
+        let filtered = originalData.filter(row => {
+            const areaValue = row[window.areaColumn];
+            return selectedAreas.includes(areaValue);
+        });
+        
+        filteredData = filtered;
+        displayResults();
+        
+        // Atualizar dropdown de área
+        areaFilter.value = selectedAreas.length === 1 ? selectedAreas[0] : '';
+        
+        // Esconder painel
+        hideAreaFilter();
+        
+        showNotification(`${selectedAreas.length} área(s) selecionada(s) - ${filtered.length} registros encontrados`, 'success');
+    }
+    
+    function clearDynamicFilters() {
+        // Limpar filtros dinâmicos
+        hideCityFilter();
+        hideAreaFilter();
+        
+        // Limpar filtros básicos
+        cityFilter.value = '';
+        areaFilter.value = '';
+        searchFilter.value = '';
+        
+        // Mostrar todos os dados
+        filteredData = originalData;
+        displayResults();
+        
+        showNotification('Todos os filtros foram limpos!', 'info');
+    }
+
+    function clearFilters() {
+        cityFilter.value = '';
+        areaFilter.value = '';
+        searchFilter.value = '';
+        applyFilters();
+    }
+
+    function displayResults() {
+        // Display original data
+        if (originalContent) {
+            originalContent.innerHTML = createDataTable(originalData, 'Dados Originais');
+        }
+        
+        // Display filtered data
+        if (filteredContent) {
+            filteredContent.innerHTML = createDataTable(filteredData, 'Dados Filtrados');
+        }
+        
+        // Update filtered rows count
+        if (displayFilteredRows) {
+            displayFilteredRows.textContent = filteredData ? filteredData.length : 0;
+        }
+        
+        // Show output section
+        if (outputSection) {
+            outputSection.style.display = 'block';
+            // Scroll to results
+            outputSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    function createDataTable(data, title) {
+        if (!data || data.length === 0) {
+            return `<div class="no-data">Nenhum dado encontrado.</div>`;
+        }
+
+        let tableHTML = `
+            <div class="table-container">
+                <h3>${title} (${data.length} registros)</h3>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+        `;
+
+        // Headers
+        headers.forEach(header => {
+            tableHTML += `<th>${header}</th>`;
+        });
+
+        tableHTML += `
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        // Data rows
+        data.forEach(row => {
+            tableHTML += '<tr>';
+            headers.forEach(header => {
+                const value = row[header] || '';
+                tableHTML += `<td>${value}</td>`;
+            });
+            tableHTML += '</tr>';
+        });
+
+        tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        return tableHTML;
+    }
+
+    function formatDataForDisplay(data) {
+        if (!data || data.length === 0) return 'Nenhum dado encontrado.';
+        
+        const headerRow = headers.join(', ');
+        const dataRows = data.map(row => 
+            headers.map(header => row[header] || '').join(', ')
+        );
+        
+        return [headerRow, ...dataRows].join('\n');
+    }
+
+    function exportToCsv() {
+        if (!filteredData || filteredData.length === 0) {
+            showNotification('Nenhum dado para exportar!', 'error');
+            return;
+        }
+        
+        const csvContent = formatDataForDisplay(filteredData);
+        downloadFile(csvContent, 'dados_filtrados.csv', 'text/csv');
+        showNotification('Arquivo CSV exportado com sucesso!', 'success');
+    }
+
+    function exportToExcel() {
+        if (!filteredData || filteredData.length === 0) {
+            showNotification('Nenhum dado para exportar!', 'error');
+            return;
+        }
+        
+        // For now, export as CSV with .xlsx extension
+        // In a real implementation, you'd use a library like SheetJS
+        const csvContent = formatDataForDisplay(filteredData);
+        downloadFile(csvContent, 'dados_filtrados.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        showNotification('Arquivo Excel exportado com sucesso!', 'success');
+    }
+
+    function exportToPdf() {
+        if (!filteredData || filteredData.length === 0) {
+            showNotification('Nenhum dado para exportar!', 'error');
+            return;
+        }
+        
+        try {
+            // Criar nova instância do jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Configurar título
+            const title = 'Relatório de Dados Filtrados - Cielo';
+            const subtitle = `Gerado em: ${new Date().toLocaleString('pt-BR')}`;
+            const totalRecords = `Total de registros: ${filteredData.length}`;
+            
+            // Adicionar título
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text(title, 20, 20);
+            
+            // Adicionar subtítulo
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text(subtitle, 20, 30);
+            doc.text(totalRecords, 20, 40);
+            
+            // Preparar dados para a tabela
+            const tableData = filteredData.map(row => 
+                headers.map(header => row[header] || '')
+            );
+            
+            // Configurar a tabela
+            const tableConfig = {
+                head: [headers],
+                body: tableData,
+                startY: 50,
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2,
+                    overflow: 'linebreak',
+                    halign: 'left'
+                },
+                headStyles: {
+                    fillColor: [0, 102, 204],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                },
+                margin: { top: 50 }
+            };
+            
+            // Gerar a tabela
+            doc.autoTable(tableConfig);
+            
+            // Adicionar rodapé
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(10);
+                doc.text(`Página ${i} de ${pageCount}`, 20, doc.internal.pageSize.height - 10);
+            }
+            
+            // Salvar o PDF
+            const filename = `dados_filtrados_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(filename);
+            
+            showNotification('Arquivo PDF exportado com sucesso!', 'success');
+        } catch (error) {
+            console.error('Erro ao gerar PDF:', error);
+            showNotification('Erro ao gerar PDF: ' + error.message, 'error');
+        }
+    }
+
+    function copyToClipboard() {
+        if (!filteredData || filteredData.length === 0) {
+            showNotification('Nenhum dado para copiar!', 'error');
+            return;
+        }
+        
+        const content = formatDataForDisplay(filteredData);
+        navigator.clipboard.writeText(content).then(() => {
+            showNotification('Dados copiados para a área de transferência!', 'success');
+        }).catch(() => {
+            showNotification('Erro ao copiar dados!', 'error');
+        });
+    }
+
+    function downloadFile(content, filename, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function clearData() {
+        excelData.value = '';
+        outputSection.style.display = 'none';
+        filtersSection.style.display = 'none';
+        fileInfoDisplay.style.display = 'none';
+        currentData = null;
+        originalData = null;
+        filteredData = null;
+        headers = [];
+        isExcelFile = false;
+        removeSelectedFile();
+        
+        // Limpar variáveis globais
+        window.cityColumn = null;
+        window.areaColumn = null;
+        
+        // Limpar filtros avançados
+        advancedFiltersContainer.innerHTML = '';
+        sortColumn.value = '';
+        sortOrder.value = 'asc';
+        
+        showNotification('Dados limpos!', 'info');
+    }
+
+    function switchTab(tabName) {
+        // Remover classe active de todos os botões e painéis
+        tabBtns.forEach(btn => btn.classList.remove('active'));
+        tabPanes.forEach(pane => pane.classList.remove('active'));
+        
+        // Adicionar classe active ao botão e painel selecionado
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        document.getElementById(`${tabName}Content`).classList.add('active');
+    }
+
+    function showLoading(show) {
+        loading.style.display = show ? 'block' : 'none';
+        processBtn.disabled = show;
+    }
+
+    function showNotification(message, type = 'info') {
+        // Remover notificação existente
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+
+        // Criar nova notificação
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        // Estilos da notificação
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 300px;
+        `;
+
+        // Cores baseadas no tipo (Cielo)
+        const colors = {
+            success: '#00cc66',
+            error: '#ff6600',
+            info: '#0066cc',
+            warning: '#ff6600'
+        };
+        
+        notification.style.background = colors[type] || colors.info;
+        notification.style.color = '#ffffff';
+
+        document.body.appendChild(notification);
+
+        // Remover após 5 segundos
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, 5000);
+    }
+
+    // Animações CSS para notificações
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Auto-resize do textarea
+    excelData.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 400) + 'px';
+    });
+
+    // Mostrar notificação de boas-vindas
+    setTimeout(() => {
+        showNotification('Bem-vindo! Cole seus dados ou importe um arquivo Excel para filtrar', 'info');
+    }, 1000);
+}); 
