@@ -2,35 +2,9 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DataHub - Plataforma de Análise de Dados</title>
-    <style>
-        /* CSS Crítico - Fallback */
-        :root {
-            --primary-dark: #0f172a;
-            --primary-blue: #1e40af;
-            --primary-light: #3b82f6;
-            --text-white: #ffffff;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-light) 50%, var(--primary-dark) 100%);
-            color: var(--text-white);
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 30px;
-            background: rgba(59, 130, 246, 0.1);
-            backdrop-filter: blur(30px);
-            border-radius: 30px;
-        }
-    </style>
-    <link rel="preload" href="./styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="./styles.css?v=12"></noscript>
+    <link rel="stylesheet" href="./styles.css?v=10">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -577,31 +551,9 @@
         </footer>
     </div>
 
-    <script>
-        // Garantir carregamento do CSS
-        (function() {
-            var cssLoaded = false;
-            var link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            link.href = './styles.css?v=12';
-            link.onload = function() { cssLoaded = true; };
-            link.onerror = function() {
-                console.warn('Erro ao carregar CSS externo, usando fallback');
-            };
-            document.head.appendChild(link);
-            
-            // Fallback para verificar se o CSS foi carregado
-            setTimeout(function() {
-                if (!cssLoaded) {
-                    console.warn('CSS não carregado após timeout, aplicando estilos inline');
-                }
-            }, 3000);
-        })();
-    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
-    <script src="./script.js"></script>
+    <script src="/script.js"></script>
 </body>
 </html> 

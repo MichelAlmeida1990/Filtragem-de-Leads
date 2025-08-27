@@ -577,28 +577,6 @@
         </footer>
     </div>
 
-    <script>
-        // Garantir carregamento do CSS
-        (function() {
-            var cssLoaded = false;
-            var link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            link.href = './styles.css?v=12';
-            link.onload = function() { cssLoaded = true; };
-            link.onerror = function() {
-                console.warn('Erro ao carregar CSS externo, usando fallback');
-            };
-            document.head.appendChild(link);
-            
-            // Fallback para verificar se o CSS foi carregado
-            setTimeout(function() {
-                if (!cssLoaded) {
-                    console.warn('CSS não carregado após timeout, aplicando estilos inline');
-                }
-            }, 3000);
-        })();
-    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>

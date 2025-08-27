@@ -1,0 +1,18 @@
+# Configurações de MIME Type
+AddType text/css .css
+AddType application/javascript .js
+
+# Headers de Cache
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|svg|ico)$">
+    Header set Cache-Control "public, max-age=31536000"
+</FilesMatch>
+
+# Compressão
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE text/html
+</IfModule>
+
+# Charset UTF-8
+AddDefaultCharset utf-8
