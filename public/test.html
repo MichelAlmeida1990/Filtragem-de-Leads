@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Layout - Cielo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <div class="logo-container">
+                    <div class="logo">🏢</div>
+                    <div class="logo-text">CIELO</div>
+                </div>
+                <div class="tetris-controls">
+                    <button class="tetris-btn">
+                        ✨ Animação ON
+                    </button>
+                </div>
+            </div>
+            <h1>Teste de Layout</h1>
+            <p>Página de teste para verificar se o CSS está funcionando</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <h2>📋 Seção de Input</h2>
+                <div class="option-tabs">
+                    <button class="option-tab active">📋 Colar Dados</button>
+                    <button class="option-tab">📁 Importar Arquivo</button>
+                </div>
+                <div class="input-area">
+                    <textarea placeholder="Teste de textarea..."></textarea>
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary">🔄 Processar</button>
+                    <button class="btn-secondary">🗑️ Limpar</button>
+                </div>
+            </div>
+
+            <div class="filters-section">
+                <h2>🔍 Filtros</h2>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="cityFilter">Cidade:</label>
+                        <select id="cityFilter" class="filter-select">
+                            <option value="">Todas as Cidades</option>
+                            <option value="maua">Mauá</option>
+                            <option value="santo-andre">Santo André</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="areaFilter">Área:</label>
+                        <select id="areaFilter" class="filter-select">
+                            <option value="">Todas as Áreas</option>
+                            <option value="centro">Centro</option>
+                            <option value="vila">Vila</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="searchFilter">Busca:</label>
+                        <input type="text" id="searchFilter" class="filter-input" placeholder="Buscar...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <h2>📊 Resultados</h2>
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Tabela de Teste (3 registros)</h3>
+                        <div class="table-actions">
+                            <button class="btn-mini active">📝 Seleção ON</button>
+                            <button class="btn-mini">🗑️ Limpar (0)</button>
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nome</th>
+                                <th>Cidade</th>
+                                <th>Área</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="lead-row">
+                                <td>1</td>
+                                <td>Empresa A</td>
+                                <td>Mauá</td>
+                                <td>Centro</td>
+                            </tr>
+                            <tr class="lead-row">
+                                <td>2</td>
+                                <td>Empresa B</td>
+                                <td>Santo André</td>
+                                <td>Vila</td>
+                            </tr>
+                            <tr class="lead-row">
+                                <td>3</td>
+                                <td>Empresa C</td>
+                                <td>Mauá</td>
+                                <td>Centro</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Teste simples de funcionalidade
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Página de teste carregada!');
+            
+            // Teste dos tabs
+            const tabs = document.querySelectorAll('.option-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Teste dos filtros
+            const selects = document.querySelectorAll('.filter-select, .filter-input');
+            selects.forEach(select => {
+                select.addEventListener('change', function() {
+                    console.log('Filtro alterado:', this.value);
+                });
+            });
+            
+            // Teste das linhas da tabela
+            const rows = document.querySelectorAll('.lead-row');
+            rows.forEach((row, index) => {
+                row.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    console.log('Linha clicada:', index + 1);
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
