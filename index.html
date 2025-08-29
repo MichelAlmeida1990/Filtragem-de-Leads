@@ -623,6 +623,15 @@
                                 </div>
                                 <div class="btn-arrow">→</div>
                     </button>
+                            
+                            <button id="showClassificationBtn" class="modern-btn classification-btn" data-action="classification">
+                                <div class="btn-icon">🎯</div>
+                                <div class="btn-content">
+                                    <span class="btn-label">Classificar</span>
+                                    <span class="btn-desc">Gerenciar leads</span>
+                                </div>
+                                <div class="btn-arrow">→</div>
+                    </button>
                         </div>
                     </div>
                 </div>
@@ -631,6 +640,79 @@
             <div class="loading" id="loading" style="display: none;">
                 <div class="spinner"></div>
                 <p>Processando seus dados...</p>
+            </div>
+
+            <!-- ===== SISTEMA DE CLASSIFICAÇÃO DE LEADS ===== -->
+            <div class="lead-classification" id="leadClassification" style="display: none;">
+                <div class="classification-header">
+                    <h2 class="classification-title">
+                        🎯 Classificação de Leads
+                    </h2>
+                    <div class="classification-stats">
+                        <div class="status-count">
+                            <span>⏳ Pendente:</span>
+                            <span class="count" id="pendenteCount">0</span>
+                        </div>
+                        <div class="status-count">
+                            <span>💬 Em Negociação:</span>
+                            <span class="count" id="negociacaoCount">0</span>
+                        </div>
+                        <div class="status-count">
+                            <span>✅ Credenciado:</span>
+                            <span class="count" id="credenciadoCount">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="classification-controls">
+                    <div class="status-filter">
+                        <button class="status-btn active" data-status="todos">
+                            📋 Todos
+                        </button>
+                        <button class="status-btn" data-status="pendente">
+                            ⏳ Pendente
+                        </button>
+                        <button class="status-btn" data-status="negociacao">
+                            💬 Em Negociação
+                        </button>
+                        <button class="status-btn" data-status="credenciado">
+                            ✅ Credenciado
+                        </button>
+                    </div>
+                    
+                    <div class="bulk-actions">
+                        <select class="bulk-select" id="bulkStatusSelect">
+                            <option value="">Ação em lote...</option>
+                            <option value="pendente">Marcar como Pendente</option>
+                            <option value="negociacao">Marcar como Em Negociação</option>
+                            <option value="credenciado">Marcar como Credenciado</option>
+                        </select>
+                        <button class="bulk-apply-btn" id="bulkApplyBtn" disabled>
+                            Aplicar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="leads-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" class="lead-checkbox" id="selectAllLeads">
+                                </th>
+                                <th>Empresa</th>
+                                <th>CNPJ</th>
+                                <th>Área/Rota</th>
+                                <th>Cidade</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leadsTableBody">
+                            <!-- Leads serão inseridos aqui dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
 

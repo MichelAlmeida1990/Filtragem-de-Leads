@@ -2169,3 +2169,384 @@ window.addEventListener("resize", function () {
     else if (icon3 && icon3.classList.contains("active")) moveSquircleToIcon(icon3, 540);
     else if (icon4 && icon4.classList.contains("active")) moveSquircleToIcon(icon4, 720);
 });
+
+// ===== SISTEMA DE CLASSIFICAÇÃO DE LEADS =====
+class LeadClassificationSystem {
+    constructor() {
+        this.leads = [];
+        this.filteredLeads = [];
+        this.leadStatuses = new Map(); // leadId -> status
+        this.selectedLeads = new Set();
+        this.currentFilter = 'todos';
+        
+        this.initializeElements();
+        this.setupEventListeners();
+        this.loadStoredStatuses();
+    }
+    
+    initializeElements() {
+        this.container = document.getElementById('leadClassification');
+        this.tableBody = document.getElementById('leadsTableBody');
+        this.selectAllCheckbox = document.getElementById('selectAllLeads');
+        this.statusButtons = document.querySelectorAll('.status-btn');
+        this.bulkSelect = document.getElementById('bulkStatusSelect');
+        this.bulkApplyBtn = document.getElementById('bulkApplyBtn');
+        
+        // Contadores
+        this.pendenteCount = document.getElementById('pendenteCount');
+        this.negociacaoCount = document.getElementById('negociacaoCount');
+        this.credenciadoCount = document.getElementById('credenciadoCount');
+    }
+    
+    setupEventListeners() {
+        // Filtros de status
+        this.statusButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.setActiveFilter(e.target.dataset.status);
+            });
+        });
+        
+        // Select all
+        this.selectAllCheckbox.addEventListener('change', (e) => {
+            this.toggleSelectAll(e.target.checked);
+        });
+        
+        // Ações em lote
+        this.bulkSelect.addEventListener('change', () => {
+            this.bulkApplyBtn.disabled = !this.bulkSelect.value || this.selectedLeads.size === 0;
+        });
+        
+        this.bulkApplyBtn.addEventListener('click', () => {
+            this.applyBulkStatus();
+        });
+    }
+    
+    loadLeadsFromFilteredData(data) {
+        if (!data || data.length === 0) {
+            this.container.style.display = 'none';
+            return;
+        }
+        
+        // Mapear dados para leads
+        this.leads = data.map((row, index) => ({
+            id: `lead_${index}`,
+            cnpj: row['NR_CNPJ_CPF'] || row['CAD'] || '',
+            empresa: row['NM_RAZAO_SOCIAL'] || '',
+            fantasia: row['NM_FANTASIA'] || '',
+            area: row['NM_GEO'] || row['ROTA'] || '',
+            cidade: row['NM_MUNICIPIO'] || '',
+            status: this.leadStatuses.get(`lead_${index}`) || 'pendente'
+        }));
+        
+        this.container.style.display = 'block';
+        this.updateDisplay();
+        
+        // Scroll suave para a seção
+        setTimeout(() => {
+            this.container.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }, 500);
+        
+        console.log(`🎯 Sistema de classificação carregado com ${this.leads.length} leads`);
+    }
+    
+    // Método para carregar dados diretamente (usado no upload)
+    loadLeadsFromGlobalData() {
+        const data = window.filteredData || window.originalData;
+        if (data && data.length > 0) {
+            this.loadLeadsFromFilteredData(data);
+        }
+    }
+    
+    setActiveFilter(status) {
+        this.currentFilter = status;
+        
+        // Atualizar botões ativos
+        this.statusButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.status === status);
+        });
+        
+        this.updateDisplay();
+    }
+    
+    updateDisplay() {
+        this.filterLeads();
+        this.renderTable();
+        this.updateStatusCounts();
+        this.updateSelectAllState();
+    }
+    
+    filterLeads() {
+        if (this.currentFilter === 'todos') {
+            this.filteredLeads = [...this.leads];
+        } else {
+            this.filteredLeads = this.leads.filter(lead => lead.status === this.currentFilter);
+        }
+    }
+    
+    renderTable() {
+        this.tableBody.innerHTML = '';
+        
+        this.filteredLeads.forEach(lead => {
+            const row = this.createLeadRow(lead);
+            this.tableBody.appendChild(row);
+        });
+    }
+    
+    createLeadRow(lead) {
+        const row = document.createElement('tr');
+        row.dataset.leadId = lead.id;
+        
+        const statusBadgeClass = `status-${lead.status}`;
+        const statusText = {
+            'pendente': '⏳ Pendente',
+            'negociacao': '💬 Em Negociação',
+            'credenciado': '✅ Credenciado'
+        }[lead.status];
+        
+        row.innerHTML = `
+            <td>
+                <input type="checkbox" class="lead-checkbox" data-lead-id="${lead.id}" 
+                       ${this.selectedLeads.has(lead.id) ? 'checked' : ''}>
+            </td>
+            <td>
+                <div style="font-weight: 600;">${lead.empresa}</div>
+                ${lead.fantasia ? `<div style="font-size: 0.9rem; opacity: 0.8;">${lead.fantasia}</div>` : ''}
+            </td>
+            <td>${lead.cnpj}</td>
+            <td>${lead.area}</td>
+            <td>${lead.cidade}</td>
+            <td>
+                <span class="status-badge ${statusBadgeClass}">${statusText}</span>
+            </td>
+            <td>
+                <select class="lead-status-select" data-lead-id="${lead.id}">
+                    <option value="pendente" ${lead.status === 'pendente' ? 'selected' : ''}>⏳ Pendente</option>
+                    <option value="negociacao" ${lead.status === 'negociacao' ? 'selected' : ''}>💬 Em Negociação</option>
+                    <option value="credenciado" ${lead.status === 'credenciado' ? 'selected' : ''}>✅ Credenciado</option>
+                </select>
+            </td>
+        `;
+        
+        // Event listeners para a linha
+        const checkbox = row.querySelector('.lead-checkbox');
+        const statusSelect = row.querySelector('.lead-status-select');
+        
+        checkbox.addEventListener('change', (e) => {
+            this.toggleLeadSelection(lead.id, e.target.checked);
+        });
+        
+        statusSelect.addEventListener('change', (e) => {
+            this.updateLeadStatus(lead.id, e.target.value);
+        });
+        
+        return row;
+    }
+    
+    toggleLeadSelection(leadId, selected) {
+        if (selected) {
+            this.selectedLeads.add(leadId);
+        } else {
+            this.selectedLeads.delete(leadId);
+        }
+        
+        this.updateSelectAllState();
+        this.bulkApplyBtn.disabled = !this.bulkSelect.value || this.selectedLeads.size === 0;
+    }
+    
+    toggleSelectAll(selectAll) {
+        this.selectedLeads.clear();
+        
+        if (selectAll) {
+            this.filteredLeads.forEach(lead => {
+                this.selectedLeads.add(lead.id);
+            });
+        }
+        
+        // Atualizar checkboxes
+        this.tableBody.querySelectorAll('.lead-checkbox').forEach(checkbox => {
+            checkbox.checked = selectAll;
+        });
+        
+        this.bulkApplyBtn.disabled = !this.bulkSelect.value || this.selectedLeads.size === 0;
+    }
+    
+    updateSelectAllState() {
+        const visibleLeads = this.filteredLeads.length;
+        const selectedVisible = this.filteredLeads.filter(lead => 
+            this.selectedLeads.has(lead.id)
+        ).length;
+        
+        this.selectAllCheckbox.checked = visibleLeads > 0 && selectedVisible === visibleLeads;
+        this.selectAllCheckbox.indeterminate = selectedVisible > 0 && selectedVisible < visibleLeads;
+    }
+    
+    updateLeadStatus(leadId, newStatus) {
+        // Atualizar no array
+        const lead = this.leads.find(l => l.id === leadId);
+        if (lead) {
+            lead.status = newStatus;
+            this.leadStatuses.set(leadId, newStatus);
+        }
+        
+        // Salvar no localStorage
+        this.saveStoredStatuses();
+        
+        // Atualizar display
+        this.updateDisplay();
+        
+        console.log(`📝 Lead ${leadId} atualizado para: ${newStatus}`);
+    }
+    
+    applyBulkStatus() {
+        const newStatus = this.bulkSelect.value;
+        if (!newStatus || this.selectedLeads.size === 0) return;
+        
+        // Atualizar todos os leads selecionados
+        this.selectedLeads.forEach(leadId => {
+            this.updateLeadStatus(leadId, newStatus);
+        });
+        
+        // Limpar seleção
+        this.selectedLeads.clear();
+        this.bulkSelect.value = '';
+        this.bulkApplyBtn.disabled = true;
+        
+        // Atualizar display
+        this.updateDisplay();
+        
+        console.log(`📋 Status em lote aplicado: ${newStatus}`);
+    }
+    
+    updateStatusCounts() {
+        const counts = {
+            pendente: 0,
+            negociacao: 0,
+            credenciado: 0
+        };
+        
+        this.leads.forEach(lead => {
+            counts[lead.status]++;
+        });
+        
+        this.pendenteCount.textContent = counts.pendente;
+        this.negociacaoCount.textContent = counts.negociacao;
+        this.credenciadoCount.textContent = counts.credenciado;
+    }
+    
+    saveStoredStatuses() {
+        const statusData = {};
+        this.leadStatuses.forEach((status, leadId) => {
+            statusData[leadId] = status;
+        });
+        localStorage.setItem('leadStatuses', JSON.stringify(statusData));
+    }
+    
+    loadStoredStatuses() {
+        try {
+            const stored = localStorage.getItem('leadStatuses');
+            if (stored) {
+                const statusData = JSON.parse(stored);
+                Object.entries(statusData).forEach(([leadId, status]) => {
+                    this.leadStatuses.set(leadId, status);
+                });
+            }
+        } catch (error) {
+            console.warn('Erro ao carregar status salvos:', error);
+        }
+    }
+    
+    exportClassifiedLeads() {
+        const classified = this.leads.filter(lead => lead.status !== 'pendente');
+        
+        if (classified.length === 0) {
+            alert('Nenhum lead classificado para exportar!');
+            return;
+        }
+        
+        // Converter para CSV
+        const headers = ['CNPJ', 'Empresa', 'Fantasia', 'Área', 'Cidade', 'Status'];
+        const csvContent = [
+            headers.join(','),
+            ...classified.map(lead => [
+                lead.cnpj,
+                `"${lead.empresa}"`,
+                `"${lead.fantasia}"`,
+                `"${lead.area}"`,
+                `"${lead.cidade}"`,
+                lead.status
+            ].join(','))
+        ].join('\n');
+        
+        // Download
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `leads_classificados_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        console.log(`📥 Exportados ${classified.length} leads classificados`);
+    }
+}
+
+// Instância global do sistema de classificação
+let leadClassificationSystem = null;
+
+// Inicializar sistema após carregamento da página
+document.addEventListener('DOMContentLoaded', function() {
+    leadClassificationSystem = new LeadClassificationSystem();
+    
+    // Configurar botão de classificação manual
+    const showClassificationBtn = document.getElementById('showClassificationBtn');
+    if (showClassificationBtn) {
+        showClassificationBtn.addEventListener('click', function() {
+            if (leadClassificationSystem) {
+                leadClassificationSystem.loadLeadsFromGlobalData();
+                
+                // Feedback visual
+                showClassificationBtn.textContent = '✅ Classificação Ativada';
+                setTimeout(() => {
+                    const label = showClassificationBtn.querySelector('.btn-label');
+                    if (label) label.textContent = 'Classificar';
+                }, 2000);
+            } else {
+                alert('Sistema de classificação não está disponível. Recarregue a página.');
+            }
+        });
+    }
+});
+
+// Integrar com o sistema de filtros existente
+// Modificar a função displayResults para incluir a classificação
+const originalDisplayResults = window.displayResults || function() {};
+window.displayResults = function(data) {
+    // Chamar função original
+    originalDisplayResults(data);
+    
+    // Carregar leads para classificação se houver dados filtrados
+    if (leadClassificationSystem && data && data.length > 0) {
+        leadClassificationSystem.loadLeadsFromFilteredData(data);
+    }
+};
+
+// Também integrar com o upload direto
+window.addEventListener('DOMContentLoaded', function() {
+    // Interceptar quando dados são carregados via upload
+    const originalProcessData = window.processData;
+    if (originalProcessData) {
+        window.processData = async function() {
+            await originalProcessData();
+            
+            // Após processar dados, carregar para classificação
+            if (leadClassificationSystem && window.filteredData && window.filteredData.length > 0) {
+                leadClassificationSystem.loadLeadsFromFilteredData(window.filteredData);
+            } else if (leadClassificationSystem && window.originalData && window.originalData.length > 0) {
+                leadClassificationSystem.loadLeadsFromFilteredData(window.originalData);
+            }
+        };
+    }
+});
